@@ -502,14 +502,25 @@
 
     ================================================================ */
 
-    const LICENSES = [
-        { password: "LingoAdmin2025",  label: "Admin / Owner",       expiry: "2099-12-31" },
-        { password: "Student_Ahmed",   label: "Ahmed Hassan",         expiry: "2025-12-31" },
-        { password: "Student_Sara",    label: "Sara Mohamed",         expiry: "2025-12-31" },
-        { password: "Group_A_Jan",     label: "Group A — January",    expiry: "2025-01-31" },
-        { password: "Group_B_Feb",     label: "Group B — February",   expiry: "2025-02-28" },
-    ];
+    let LICENSES = JSON.parse(
+    localStorage.getItem("lingolab_licenses") || "[]"
+    );
 
+    if (LICENSES.length === 0) {
+        LICENSES = [
+            {
+                username: "admin",
+                password: "LingoAdmin2025",
+                label: "Admin / Owner",
+                expiry: "2099-12-31"
+            }
+        ];
+
+        localStorage.setItem(
+            "lingolab_licenses",
+            JSON.stringify(LICENSES)
+        );
+    }
     /* ================================================================
        GATE LOGIC — no need to edit below this line
     ================================================================ */
@@ -1292,6 +1303,164 @@
         const btn = document.getElementById('record-btn');
         if(btn) { btn.innerHTML = "🎤 Start Recording"; btn.classList.remove("recording"); }
     }
+    window.addEventListener("load", () => {
+
+    document.getElementById("admin-btn")
+    .addEventListener("click", function(){
+
+        const pass = prompt("Admin Password");
+
+        if(pass !== "LingoAdmin2025"){
+            alert("Wrong Password");
+            return;
+        }
+
+        document.getElementById("admin-panel")
+        .style.display = "block";
+
+        renderLicenses();
+
+    });
+
+});
+    function addLicense(){
+
+    const username =
+    document.getElementById("new-user").value;
+
+    const password =
+    document.getElementById("new-pass").value;
+
+    const expiry =
+    document.getElementById("new-expiry").value;
+
+    if(!username || !password || !expiry){
+        alert("Fill all fields");
+        return;
+    }
+
+    LICENSES.push({
+        username,
+        password,
+        label: username,
+        expiry
+    });
+
+    localStorage.setItem(
+    "lingolab_licenses",
+    JSON.stringify(LICENSES)
+    );
+
+    renderLicenses();
+
+    document.getElementById("new-user").value = "";
+    document.getElementById("new-pass").value = "";
+    document.getElementById("new-expiry").value = "";
+
+    }
+
+    function deleteLicense(index){
+
+    LICENSES.splice(index,1);
+
+    localStorage.setItem(
+    "lingolab_licenses",
+    JSON.stringify(LICENSES)
+    );
+
+    renderLicenses();
+
+    }
+
+    function renderLicenses(){
+
+    const list =
+    document.getElementById("licenses-list");
+
+    list.innerHTML = "";
+
+    LICENSES.forEach((lic,index)=>{
+
+    list.innerHTML += `
+    <div style="
+    padding:10px;
+    margin-bottom:10px;
+    border:1px solid #ddd;
+    border-radius:8px;
+    ">
+
+    <b>${lic.username || lic.label}</b>
+
+    <br>
+
+    ${lic.password}
+
+    <br>
+
+    ${lic.expiry}
+
+    <br><br>
+
+    <button onclick="deleteLicense(${index})">
+    Delete
+    </button>
+
+    </div>
+    `;
+
+    });
+
+    }
     </script>
+
+    <button id="admin-btn"
+        style="
+        position:fixed;
+        bottom:20px;
+        right:20px;
+        z-index:99999;
+        padding:10px 15px;
+        border:none;
+        border-radius:8px;
+        cursor:pointer;
+        ">
+        ⚙ Admin
+    </button>
+
+    <div id="admin-panel"
+    style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:white;
+    z-index:100000;
+    padding:20px;
+    overflow:auto;
+    ">
+
+    <h2>License Manager</h2>
+
+    <input id="new-user" placeholder="Username">
+
+    <input id="new-pass" placeholder="Password">
+
+    <input id="new-expiry" type="date">
+
+    <button onclick="addLicense()">
+    Add License
+    </button>
+
+    <hr>
+
+    <div id="licenses-list"></div>
+
+        <button onclick="
+        document.getElementById('admin-panel').style.display='none'
+        ">
+        Close
+        </button>
+
+    </div>
+
 </body>
 </html>
